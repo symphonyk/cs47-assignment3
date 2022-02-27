@@ -5,6 +5,7 @@ import { myTopTracks, albumTracks } from "./utils/apiOptions";
 import { REDIRECT_URI, SCOPES, CLIENT_ID, ALBUM_ID } from "./utils/constants";
 import Colors from "./Themes/colors"
 import colors from "./Themes/colors";
+import millisToMinutesAndSeconds from "./utils/millisToMinuteSeconds.js"
 
 
 // Endpoints for authorizing with Spotify
@@ -47,10 +48,9 @@ export default function App() {
       // const res = await albumTracks(ALBUM_ID, token);
       setTracks(res);
     };
-
-if (token) {
-    fetchTracks(); }
-  }, [token]);
+    if (token) {
+        fetchTracks(); }
+      }, [token]);
 
   const SpotifyAuthentButton = () => {
     return (
@@ -63,21 +63,17 @@ if (token) {
             backgroundColor: pressed
             ? 'darkgreen'
             : 'limegreen',
-            borderRadius: 9999,
+            borderRadius: '100%',
             height: 35,
             width: 200,
           },
-          styles.wraperrCustom
         ]}>
-
-        {({pressed}) => (
           <View syle = {{display: 'flex', flexDirection: "row", justifyContent: 'center', alignItems:'center'}}>
           <Image style = {{width:20, height: 20, marginTop: 7}} source = {require("./assets/spotify-logo.png")}/>
           <Text style = {{paddingLeft: 27, color: 'white', fontWeight: 'bold', fontSize: 13, marginTop: -15}}>
-            {pressed ? 'CONNECT WITH SPOTIFY' : 'CONNECT WITH SPOTIFY'}
+            CONNECT WITH SPOTIFY
           </Text>
           </View>
-        )}
         </Pressable>
     );
   }
@@ -86,19 +82,21 @@ if (token) {
     return(
       <View style = {styles.trackStyles}>
 
-      <View style = {styles.imgStyles}>
-        <Image source = {{ uri: imgURL}} style = {{width: 50, height:50,}}/>
+      <View style = {styles.ImgAndTitlesStyles}>
+        <View style = {styles.imgStyles}>
+          <Image source = {{ uri: imgURL}} style = {{width: 50, height:50,}}/>
+        </View>
+
+        <View style={styles.titleArtistStyles}>
+            <Text style = {styles.trackInfo} numberOfLines={1}>{Title}</Text>
+            <Text style = {styles.trackInfo}numberOfLines={1}>{Artist}</Text>
+            <Text style = {styles.trackInfo}numberOfLines={1}>{Album}</Text>
+        </View>
       </View>
 
-      <View style={styles.titleArtistStyles}>
-        <Text style = {styles.trackInfo}>{Title}</Text>
-        <Text style = {styles.trackInfo}>{Artist}</Text>
-        <Text style = {styles.trackInfo}>{Album}</Text>
-      </View>
-
-      <View style = {styles.TimingStyles}>
-        <Text style = {styles.trackInfo}>{Time}</Text>
-      </View>
+        <View style = {styles.TimingStyles}>
+          <Text style = {styles.trackInfo}numberOfLines={1}>{millisToMinutesAndSeconds(Time)}</Text>
+        </View>
 
       </View>
     );
@@ -113,28 +111,34 @@ if (token) {
     Time = {item.duration_ms}
   />)
 
-const TopTracks = () => {
-  console.log(tracks)
-  return (
-    <SafeAreaView style = {styles.topTracksContainer}>
-      <FlatList
-      data = {tracks}
-      renderItem = {renderItem}
-    keyExtractor = {item => item.id}
-  />
-    </SafeAreaView>
-      );
-    }
+  const TopTracks = () => {
+    return (
+      <View style = {styles.TopTracksPage}>
+        <View style = {styles.TopTracksTitle}>
+          <Image style = {styles.TopTrackslogo} source={require("./assets/spotify-logo.png")}/>
+          <Text style = {styles.TitleMyTopTracks}>My Top Tracks</Text>
+        </View>
+
+      <View style = {styles.TopTracksStyles}>
+        <FlatList
+        data = {tracks}
+        renderItem = {renderItem}
+        keyExtractor = {item => item.id}
+    />
+      </View>
+      </View>
+        );
+      }
 
 
-  if (token) {
+if (token) {
     // Authenticated, make API request
     contentDisplayed = <TopTracks/>
   }else{
     contentDisplayed = <SpotifyAuthentButton/>
-  }
+}
   
-  return (
+return (
     <SafeAreaView style={styles.container}>
       {contentDisplayed}
     </SafeAreaView>
@@ -144,47 +148,73 @@ const TopTracks = () => {
 
 const styles = StyleSheet.create({
   container: {
-    display: 'flex',
     flexDirection: 'column',
     backgroundColor: Colors.background,
-    justifyContent: "center",
     alignItems: 'center',
-    flex: 1
   },
-
 
 
   trackInfo: {
     color: 'white',
     fontWeight: 'bold',
+
   },
 
   trackStyles: {
-    display: 'flex',
     flexDirection: "row",
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
 
   imgStyles: {
-    flex: 1,
+    flex: -1,
     justifyContent: 'center',
-    display: 'flex',
+  },
+
+
+  ImgAndTitlesStyles: {
+    flexDirection: "row",
+    justifyContent: 'flex-start',
+    
+  },
+
+  TimingStyles: {
+    flexDirection: "row",
   },
 
   titleArtistStyles: {
-    display: 'flex',
-    justifyContent: 'center',
+    width: '75%'
   },
 
-  topTracksContainer: {
-    flex: 1,
-    display: 'flex',
-    backgroundColor: Colors.background,
-    justifyContent: 'flex-start',
-    flexDirection: 'column',
+  TopTracksStyles: {
+    flex: 15,
     alignItems: 'center',
   },
 
+  TopTracksPage: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: "center",
+    alignItems: "center",
+  },
 
+  TopTracksTitle:{
+    display: 'flex',
+    backgroundColor: Colors.background,
+    flexDirection: 'row',
+    justifyContent: "center",
+    alignItems: "center",
+    flex: 1
+  },
+
+  TopTrackslogo: {
+    height: 20,
+    width: 20,
+  },
+
+  TitleMyTopTracks: {
+    color: "white",
+    fontSize: 22,
+    fontWeight: "bold",
+  }
 });
